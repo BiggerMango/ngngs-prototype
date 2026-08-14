@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
     }
 }
 
-export async function discordFetch<T>(endpoint: string, maxRetries: number = 3): Promise<T | null> {
+async function discordFetch<T>(endpoint: string, maxRetries: number = 3): Promise<T | null> {
     if (maxRetries <= 0) {
         console.error(`[Discord API] Max retries reached for endpoint: ${endpoint}`);
         return null;
