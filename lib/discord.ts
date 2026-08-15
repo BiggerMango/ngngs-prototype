@@ -38,39 +38,45 @@ export async function discordFetch<T>(endpoint: string, maxRetries: number = 3):
         return null;
     }
 
-    const response = await fetch(`https://discord.com/api/v10${endpoint}`, {
-        method: 'GET',
-        headers: {
-            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
-            'Content-Type': 'application/json',
-        },
-        next: { revalidate: 60 },
-    });
+    try {
+        const response = await fetch(`https://discord.com/api/v10${endpoint}`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
+                'Content-Type': 'application/json',
+            },
+            next: { revalidate: 60 },
+        });
 
-    if (response.status === 429) {
-        const data = await response.json();
-        const retryAfter = data.retry_after || 1;
-        const isGlobal = data.global || false;
+        // 1. BEHANDLUNG VON RATE LIMITS (HTTP 429)
+        if (response.status === 429) {
+            const data = await response.json();
+            const retryAfter = (data.retry_after || 1) * 1000; // Sekunden in ms umrechnen
 
-        console.warn(
-            `[Discord API] Rate limited on ${endpoint}. ${
-                isGlobal ? 'GLOBAL' : 'Route'
-            } limit hit. Retrying in ${retryAfter}s...`
-        );
+            console.warn(
+                `[Discord API] Rate limit hit on ${endpoint}. Retrying in ${retryAfter / 1000}s...`
+            );
+
+            // Warten, bis das Limit abgelaufen ist
+            await new Promise((resolve) => setTimeout(resolve, retryAfter));
+
+            // Rekursiver Erneuter Versuch (Retry)
+            return discordFetch<T>(endpoint, maxRetries - 1);
+        }
+
+        // 2. ANDERE FEHLERSTATUSCODES ABFANGEN (z. B. 401, 403, 404)
+        if (!response.ok) {
+            console.error(`[Discord API] Error ${response.status} on ${endpoint}`);
+            return null;
+        }
+
+        // 3. ERFOLGSFALL: JSON parsen und zurückgeben
+        return (await response.json()) as T;
+
+    } catch (err) {
+        console.error(`[Discord API] Network error on ${endpoint}:`, err);
+        return null;
     }
-
-    const remaining = response.headers.get('X-RateLimit-Remaining');
-    const resetAfter = response.headers.get('X-RateLimit-Reset-After');
-
-    if (remaining !== null && parseInt(remaining, 10) <= 0 && resetAfter !== null) {
-        const waitTimeSeconds = parseFloat(resetAfter);
-        console.warn(
-            `[Discord API] Rate limit bucket exhausted. Pausing requests for ${waitTimeSeconds}s.`
-        );
-        await new Promise((resolve) => setTimeout(resolve, waitTimeSeconds * 1000));
-    }
-
-    return (await response.json()) as T;
 }
 
 export async function fetchAllGuildMembers(guildId: string): Promise<DiscordGuildMember[]> {
