@@ -24,120 +24,6 @@ import {
 import { Discord } from "@/components/SVGs/Socials";
 import { description } from "@/constants";
 
-export default function Game({ params }: { params: { game: string } }) {
-  const data = content.find((content) => content.id === params.game);
-
-  if (!data) {
-    redirect("/404");
-  }
-
-  return (
-    <main className="min-h-screen bg-primary">
-      {/* Hero Section */}
-      <section className="relative w-full h-[60vh] lg:h-[70vh] overflow-hidden">
-        <Image
-          src={data.background}
-          alt={data.backgroundAlt}
-          className="absolute inset-0 w-full h-full object-cover"
-          priority
-        />
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 v-black-fade"></div>
-        <div className="absolute inset-0 h-black-fade"></div>
-
-        {/* Hero Content */}
-        <div className="absolute inset-0 flex items-center justify-start px-8 lg:px-16">
-          <div className="max-w-2xl">
-            <h1 className="text-6xl lg:text-7xl font-anek font-bold mb-4">
-              <span className="text-transparent bg-clip-text big-title-gradient">
-                {data.title}
-              </span>
-            </h1>
-            <div className="h-1 w-24 decoration-gradient rounded-full"></div>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Content Section */}
-      <section className="relative z-10 px-8 lg:px-16 py-16 lg:py-20 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          {/* Left Column - Description and Contact */}
-          <div className="space-y-8">
-            {/* Description Card */}
-            <div className="card-gradient rounded-xl p-8 border border-lightgray hover:border-primaryGreen transition-all duration-300 shadow-lg">
-              <h2 className="title-gradient text-3xl lg:text-4xl pt-2 font-anek font-bold mb-6 bg-clip-text">
-                Über das Spiel
-              </h2>
-              <p className="text-gray-300 leading-relaxed text-lg">{data.description}</p>
-            </div>
-
-            {/* Contact Card */}
-            <div className="card-gradient2 rounded-xl p-8 border border-lightgray hover:border-primaryGreen transition-all duration-300 shadow-lg">
-              <h3 className="text-2xl font-anek font-bold mb-6 text-transparent bg-clip-text title-gradient">
-                Ansprechpartner
-              </h3>
-
-              <div className="flex flex-col space-y-4">
-                <div>
-                  <p className="text-gray-400 text-sm uppercase tracking-wide mb-1">
-                    Verantwortlich
-                  </p>
-                  <p className="text-xl font-bold text-white">{data.responsible.name}</p>
-                </div>
-
-                <a
-                  href={`https://discord.com/users/${data.responsible.discordId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative z-10 inline-flex items-center gap-3 mt-4 px-6 py-3 discord-gradient rounded-lg font-bold text-white transition-all duration-300 transform hover:scale-105 w-fit overflow-visible"
-                >
-                  {/* Flex-Shrink-0 verhindert, dass das Icon den Text wegdrückt */}
-                  <div className="flex-shrink-0 relative z-10">
-                    <Discord />
-                  </div>
-
-                  {/* Text explizit mit weisser Farbe und relativem Z-Index versehen */}
-                  <span className="relative z-10 text-white opacity-100 mix-blend-normal">
-                    {data.responsible.discordHandle || data.responsible.name || "Discord Profil"}
-                  </span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Screenshot */}
-          <div className="relative h-full">
-            <div className="relative rounded-xl overflow-hidden border-2 border-primaryGreen shadow-2xl group">
-              <div className="absolute inset-0 bg-gradient-to-br from-primaryGreen to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-500 z-10"></div>
-              <Image
-                src={data.screenshot}
-                alt={data.screenshotAlt}
-                className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-
-            {/* Decorative elements */}
-            <div className="absolute -top-4 -right-4 w-24 h-24 bg-primaryGreen rounded-full opacity-20 blur-3xl -z-10"></div>
-            <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-secondaryGreen rounded-full opacity-20 blur-3xl -z-10"></div>
-          </div>
-        </div>
-
-        {/* Additional Info Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-          {data.additionalInfo.map((info, index) => (
-            <div key={index} className="card-gradient rounded-lg p-6 border border-lightgray hover:border-primaryGreen transition-all duration-300 text-center group">
-              <div className="text-4xl font-bold title-gradient mb-2 group-hover:scale-110 transition-transform duration-300">
-                {info.icon}
-              </div>
-              <p className="text-gray-400">{info.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-    </main>
-  );
-}
-
 const content = [
   {
     id: "lol",
@@ -321,3 +207,120 @@ const content = [
     ],
   }
 ];
+
+export default async function Game({ params }: { params: Promise<{ game: string }> }) {
+  const resolvedParams = await params
+  const data = content.find((content) => content.id === resolvedParams.game);
+
+  if (!data) {
+    redirect("/404");
+  }
+
+  return (
+    <main className="min-h-screen bg-primary">
+      {/* Hero Section */}
+      <section className="relative w-full h-[60vh] lg:h-[70vh] overflow-hidden">
+        <Image
+          src={data.background}
+          alt={data.backgroundAlt}
+          className="absolute inset-0 w-full h-full object-cover"
+          priority
+        />
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 v-black-fade"></div>
+        <div className="absolute inset-0 h-black-fade"></div>
+
+        {/* Hero Content */}
+        <div className="absolute inset-0 flex items-center justify-start px-8 lg:px-16">
+          <div className="max-w-2xl">
+            <h1 className="text-6xl lg:text-7xl font-anek font-bold mb-4">
+              <span className="text-transparent bg-clip-text big-title-gradient">
+                {data.title}
+              </span>
+            </h1>
+            <div className="h-1 w-24 decoration-gradient rounded-full"></div>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content Section */}
+      <section className="relative z-10 px-8 lg:px-16 py-16 lg:py-20 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          {/* Left Column - Description and Contact */}
+          <div className="space-y-8">
+            {/* Description Card */}
+            <div className="card-gradient rounded-xl p-8 border border-lightgray hover:border-primaryGreen transition-all duration-300 shadow-lg">
+              <h2 className="title-gradient text-3xl lg:text-4xl pt-2 font-anek font-bold mb-6 bg-clip-text">
+                Über das Spiel
+              </h2>
+              <p className="text-gray-300 leading-relaxed text-lg">{data.description}</p>
+            </div>
+
+            {/* Contact Card */}
+            <div className="card-gradient2 rounded-xl p-8 border border-lightgray hover:border-primaryGreen transition-all duration-300 shadow-lg">
+              <h3 className="text-2xl font-anek font-bold mb-6 text-transparent bg-clip-text title-gradient">
+                Ansprechpartner
+              </h3>
+
+              <div className="flex flex-col space-y-4">
+                <div>
+                  <p className="text-gray-400 text-sm uppercase tracking-wide mb-1">
+                    Verantwortlich
+                  </p>
+                  <p className="text-xl font-bold text-white">{data.responsible.name}</p>
+                </div>
+
+                <a
+                  href={`https://discord.com/users/${data.responsible.discordId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative z-10 inline-flex items-center gap-3 mt-4 px-6 py-3 discord-gradient rounded-lg font-bold text-white transition-all duration-300 transform hover:scale-105 w-fit overflow-visible"
+                >
+                  {/* Flex-Shrink-0 verhindert, dass das Icon den Text wegdrückt */}
+                  <div className="flex-shrink-0 relative z-10">
+                    <Discord />
+                  </div>
+
+                  {/* Text explizit mit weisser Farbe und relativem Z-Index versehen */}
+                  <span className="relative z-10 text-white opacity-100 mix-blend-normal">
+                    {data.responsible.discordHandle || data.responsible.name || "Discord Profil"}
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Screenshot */}
+          <div className="relative h-full">
+            <div className="relative rounded-xl overflow-hidden border-2 border-primaryGreen shadow-2xl group">
+              <div className="absolute inset-0 bg-gradient-to-br from-primaryGreen to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-500 z-10"></div>
+              <Image
+                src={data.screenshot}
+                alt={data.screenshotAlt}
+                className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+
+            {/* Decorative elements */}
+            <div className="absolute -top-4 -right-4 w-24 h-24 bg-primaryGreen rounded-full opacity-20 blur-3xl -z-10"></div>
+            <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-secondaryGreen rounded-full opacity-20 blur-3xl -z-10"></div>
+          </div>
+        </div>
+
+        {/* Additional Info Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+          {data.additionalInfo.map((info, index) => (
+            <div key={index} className="card-gradient rounded-lg p-6 border border-lightgray hover:border-primaryGreen transition-all duration-300 text-center group">
+              <div className="text-4xl font-bold title-gradient mb-2 group-hover:scale-110 transition-transform duration-300">
+                {info.icon}
+              </div>
+              <p className="text-gray-400">{info.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+
